@@ -9,7 +9,7 @@ import json
 
 
 class FaceCaptureApp:
-    CONFIG_FILE_PATH = os.path.join(os.path.expanduser("~"), "EyeWatch_config.json")
+    CONFIG_FILE_PATH = os.path.join(os.path.expanduser("~"), "OneDrive", "Documents", "EyeWatch_File", "EyeWatch_config.json")
 
     def __init__(self, root):
         self.root = root
@@ -37,6 +37,8 @@ class FaceCaptureApp:
         self.create_home_widgets()
 
         self.show_frame(self.login_frame)
+
+        self.create_configuration_file()
         self.load_configuration()
 
     def create_login_widgets(self):
@@ -74,8 +76,7 @@ class FaceCaptureApp:
         self.signup_button.grid(row=2, column=0, columnspan=2, pady=10, padx=10)
 
     def create_home_widgets(self):
-        self.camera_dropdown = ttk.Combobox(self.home_frame, textvariable=self.selected_camera,
-                                            values=self.camera_names)
+        self.camera_dropdown = ttk.Combobox(self.home_frame, textvariable=self.selected_camera, values=self.camera_names)
         self.camera_dropdown.grid(row=1, column=0, pady=10, padx=10)
 
         self.active_camera_button = ttk.Button(self.home_frame, text="Active Camera", command=self.start_capture)
@@ -93,12 +94,10 @@ class FaceCaptureApp:
         self.user_button = ttk.Button(self.home_frame, text="User Info", command=self.stop_capture_function)
         self.user_button.grid(row=0, column=3, pady=10, padx=10)
 
-        self.save_image_location_button = ttk.Button(self.home_frame, text="Save Image Location",
-                                                     command=self.set_image_location)
+        self.save_image_location_button = ttk.Button(self.home_frame, text="Save Image Location", command=self.set_image_location)
         self.save_image_location_button.grid(row=4, column=0, pady=10, padx=10)
 
-        self.save_video_location_button = ttk.Button(self.home_frame, text="Save Video Location",
-                                                     command=self.set_video_location)
+        self.save_video_location_button = ttk.Button(self.home_frame, text="Save Video Location", command=self.set_video_location)
         self.save_video_location_button.grid(row=5, column=0, pady=10, padx=10)
 
         self.image_location_label = ttk.Label(self.home_frame, text="Image Save Location:")
@@ -114,6 +113,16 @@ class FaceCaptureApp:
         self.camera_canvas = tk.Canvas(self.home_frame, width=700, height=500)
         self.camera_canvas.grid(row=1, column=1, rowspan=3, columnspan=3, padx=50, pady=50)
 
+    def create_configuration_file(self):
+        config_file_path = self.CONFIG_FILE_PATH.format(username=getpass.getuser())
+        config_dir = os.path.dirname(config_file_path)
+
+        os.makedirs(config_dir, exist_ok=True)
+
+        if not os.path.exists(config_file_path):
+            with open(config_file_path, 'w') as file:
+                json.dump({}, file)
+
     def load_configuration(self):
         try:
             with open(self.CONFIG_FILE_PATH.format(username=getpass.getuser()), 'r') as file:
@@ -125,17 +134,11 @@ class FaceCaptureApp:
             self.image_location_entry.config(state="readonly")
 
         except FileNotFoundError:
-            pass
-
+            self.create_configuration_file()
     def save_configuration(self):
         config_data = {"image_location": self.image_location_entry.get()}
 
-        config_file_path = self.CONFIG_FILE_PATH.format(username=getpass.getuser())
-        config_dir = os.path.dirname(config_file_path)
-
-        os.makedirs(config_dir, exist_ok=True)
-
-        with open(config_file_path, 'w') as file:
+        with open(self.CONFIG_FILE_PATH.format(username=getpass.getuser()), 'w') as file:
             json.dump(config_data, file)
 
     def set_image_location(self):
@@ -250,7 +253,7 @@ class FaceCaptureApp:
             os.makedirs(image_save_location)
 
         now = datetime.now()
-        date_time = now.strftime("%Y%m%d_%H%M%S")
+        date_time = now.strftime("%Y%m%d_%H%M")
         file_name = f"EyeWatch_{date_time}.png"
         file_path = os.path.join(image_save_location, file_name)
         cv2.imwrite(file_path, frame)
