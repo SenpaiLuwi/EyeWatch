@@ -253,7 +253,7 @@ class FaceCaptureApp:
             os.makedirs(image_save_location)
 
         now = datetime.now()
-        date_time = now.strftime("%Y%m%d_%H%M")
+        date_time = now.strftime("%Y%m%d_%H%M%S")
         file_name = f"EyeWatch_{date_time}.png"
         file_path = os.path.join(image_save_location, file_name)
         cv2.imwrite(file_path, frame)
